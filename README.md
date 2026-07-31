@@ -9,7 +9,7 @@ Beyond this vision paper, this repository serves as a living index for research,
 ## Resources
 
 - Website: https://greatyyx.github.io/trustworthy_agent_network/
-- Demos: [Examples](./examples).
+- Guardrail examples: [guardrail_examples](./guardrail_examples).
 
 ## Citation
 
