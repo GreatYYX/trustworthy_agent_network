@@ -1,4 +1,3 @@
-```
 (venv)  > python adversarial_composition_demo.py
 
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -100,9 +99,8 @@ This script will parse the vendor summary to identify any financial operations, 
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║            Summary: Hidden prompt injection can bypass guardrails            ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
-```
 
-```
+
 (venv)  > python semantic_misalignment_demo.py
 
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -146,9 +144,8 @@ Estimated time: 2.5 hours
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║     Summary: Risk definitions are vague; both routes pass the guardrail      ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
-```
 
-```
+
 (venv)  > python data_reidentification_demo.py
 
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -243,4 +240,3 @@ DATA RE-IDENTIFICATION - CASE 2: SAFE RELEASE (NAME REMOVED)
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║ Summary: Guardrail blocks medical data with names; allows name-removed data  ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
-```
