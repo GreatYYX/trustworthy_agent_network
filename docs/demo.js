@@ -1,39 +1,28 @@
 (() => {
+  const data = window.GUARDRAIL_DEMO_DATA;
+  const grid = document.getElementById("case-grid");
+  const errorEl = document.getElementById("demo-error");
+  const copyLinkBtn = document.getElementById("copy-link-btn");
+  const toggleStreamBtn = document.getElementById("toggle-stream-btn");
+  const replayAllBtn = document.getElementById("replay-all-btn");
+  const streams = [];
+  let runId = 0;
+  let paused = false;
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
   function showError(message) {
-    const el = document.getElementById("demo-error");
-    if (!el) return;
-    el.hidden = false;
-    el.textContent = message;
+    if (!errorEl) return;
+    errorEl.hidden = false;
+    errorEl.textContent = message;
   }
 
-  const data = window.GUARDRAIL_DEMO_DATA;
-  if (!data || !Array.isArray(data.demos) || !data.demos.length) {
+  if (!data || !Array.isArray(data.demos) || !data.demos.length || !grid) {
     showError("Demo data failed to load. Hard-refresh with Cmd+Shift+R.");
     return;
   }
 
-  const scenarioList = document.getElementById("scenario-list");
-  const caseTabs = document.getElementById("case-tabs");
-  const caseKicker = document.getElementById("case-kicker");
-  const caseTitle = document.getElementById("case-title");
-  const caseSummary = document.getElementById("case-summary");
-  const outcomeBadge = document.getElementById("outcome-badge");
-  const timeline = document.getElementById("timeline");
-  const replayBtn = document.getElementById("replay-btn");
-  const copyLinkBtn = document.getElementById("copy-link-btn");
-  const modelBlurb = document.getElementById("model-blurb");
-  const chatStatus = document.getElementById("chat-status");
-  const errorEl = document.getElementById("demo-error");
-
-  const state = {
-    model: "sol",
-    demoId: data.demos[0].id,
-    caseIndex: 0,
-    token: 0,
-  };
-
-  function escapeHtml(text) {
-    return String(text)
+  function escapeHtml(value) {
+    return String(value ?? "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
@@ -41,354 +30,242 @@
       .replace(/'/g, "&#39;");
   }
 
-  function currentDemo() {
-    return data.demos.find((demo) => demo.id === state.demoId) || data.demos[0];
+  function boltedAttackLabel(value) {
+    if (value === "exploited") return "Attack succeeds";
+    if (value === "partial") return "Partial bypass";
+    return "Attack blocked";
   }
 
-  function currentCases() {
-    const demo = currentDemo();
-    const modelCases = (demo.cases && demo.cases[state.model]) || [];
-    const bakedCases = demo.bakedIn || [];
-    const effectiveIndex = demo.boltedAttackIndex === 0 ? 1 : 0;
-    const boltedEffective = modelCases[effectiveIndex];
-    const boltedAttack = modelCases[demo.boltedAttackIndex];
-    if (!boltedEffective || !boltedAttack || bakedCases.length < 1) return [];
-    return [
-      {
-        ...boltedEffective,
-        tabTitle: "Guardrail effective",
-        architectureLabel: "Bolted-on effective · " + data.models[state.model].label,
-      },
-      {
-        ...boltedAttack,
-        tabTitle: "Guardrail ineffective",
-        architectureLabel: "Bolted-on ineffective · " + data.models[state.model].label,
-      },
-      {
-        ...bakedCases[0],
-        tabTitle: "Baked-in defense",
-        architectureLabel: "TAN baked-in defense",
-      },
-    ];
+  function streamShell(streamId) {
+    return `
+      <div class="stream-shell">
+        <div class="stream-toolbar">
+          <span class="stream-label"><i aria-hidden="true"></i> Dialogue stream</span>
+          <span class="stream-status" data-stream-status="${escapeHtml(streamId)}">Queued</span>
+        </div>
+        <div class="stream-body" data-stream-body="${escapeHtml(streamId)}" aria-live="polite"></div>
+      </div>`;
   }
 
-  function currentCase() {
-    const cases = currentCases();
-    return cases[Math.min(state.caseIndex, Math.max(cases.length - 1, 0))];
+  function boltedCard(demo, modelId) {
+    const model = data.models[modelId];
+    const cases = demo.cases?.[modelId] || [];
+    const attackIndex = demo.boltedAttackIndex || 0;
+    const attack = cases[attackIndex];
+    if (!attack || !model) return "";
+
+    const streamId = `${demo.id}-${modelId}`;
+    streams.push({ id: streamId, sectionId: demo.id, item: attack });
+
+    return `
+      <article class="comparison-card bolted-card" data-stream-card="${escapeHtml(streamId)}" data-outcome="${escapeHtml(attack.outcome)}">
+        <div class="card-topline">
+          <p class="architecture">Bolted-on · ${escapeHtml(model.label)}</p>
+          <span class="outcome ${escapeHtml(attack.outcome)}">${boltedAttackLabel(attack.outcome)}</span>
+        </div>
+        <h3>${escapeHtml(attack.title)}</h3>
+        <p class="card-summary">${escapeHtml(attack.summary)}</p>
+        ${streamShell(streamId)}
+      </article>`;
   }
 
-  function shortLabel(speaker) {
-    const value = String(speaker || "");
-    if (value.includes("Guardrail")) return "Rail";
-    if (value.includes("System")) return "Sys";
-    if (value.includes("Finance")) return "Fin";
-    if (value.includes("Scraper")) return "Web";
-    if (value.includes("Planning")) return "Plan";
-    if (value.includes("Navigation")) return "Nav";
-    if (value.includes("Medical")) return "Med";
-    if (value.includes("Public")) return "Pub";
-    if (value.includes("Cross")) return "Join";
-    if (value.includes("Coder")) return "Code";
-    if (value.includes("Tester")) return "Test";
-    if (value.includes("TAN")) return "TAN";
-    if (value.includes("Provenance")) return "Prov";
-    if (value.includes("Operator")) return "Op";
-    if (value.includes("Registry")) return "Reg";
-    return value.slice(0, 3);
+  function bakedCard(demo) {
+    const attack = demo.bakedIn?.[0];
+    const valid = demo.bakedIn?.[1];
+    if (!attack || !valid) return "";
+
+    const streamId = `${demo.id}-tan`;
+    streams.push({ id: streamId, sectionId: demo.id, item: attack });
+
+    return `
+      <article class="comparison-card baked-card" data-stream-card="${escapeHtml(streamId)}" data-outcome="${escapeHtml(attack.outcome)}">
+        <div class="card-topline">
+          <p class="architecture">TAN baked-in · model-independent</p>
+          <span class="outcome ${escapeHtml(attack.outcome)}">Defense succeeds</span>
+        </div>
+        <h3>${escapeHtml(attack.title)}</h3>
+        <p class="card-summary">${escapeHtml(attack.summary)}</p>
+        ${streamShell(streamId)}
+        <div class="valid-path is-pending" data-completion-for="${escapeHtml(streamId)}">
+          <div>
+            <span class="valid-path-label">Valid action remains reachable</span>
+            <strong>${escapeHtml(valid.title)}</strong>
+          </div>
+        </div>
+      </article>`;
   }
 
-  function avatarClass(speaker, kind) {
-    const name = String(speaker || "").toLowerCase();
-    if (name.includes("system")) return "system";
-    if (name.includes("guardrail")) return "guard";
-    if (kind === "model") return "model";
+  grid.innerHTML = data.demos
+    .map((demo, index) => `
+      <section class="scenario-section" id="${escapeHtml(demo.id)}">
+        <header class="scenario-head">
+          <span class="scenario-index">${String(index + 1).padStart(2, "0")}</span>
+          <div>
+            <h2>${escapeHtml(demo.title)}</h2>
+            <p>${escapeHtml(demo.subtitle)}</p>
+          </div>
+        </header>
+        <div class="comparison-grid">
+          ${boltedCard(demo, "sol")}
+          ${boltedCard(demo, "opus")}
+          ${bakedCard(demo)}
+        </div>
+      </section>`)
+    .join("");
+
+  function speakerName(value) {
+    return String(value || "Agent").split("·")[0].trim();
+  }
+
+  function speakerCode(value) {
+    const name = String(value || "");
+    if (name.includes("Guardrail")) return "Rail";
+    if (name.includes("TAN")) return "TAN";
+    if (name.includes("System")) return "Sys";
+    if (name.includes("Finance")) return "Fin";
+    if (name.includes("Navigation")) return "Nav";
+    if (name.includes("Medical")) return "Med";
+    if (name.includes("Cross")) return "Join";
+    if (name.includes("Coder")) return "Code";
+    if (name.includes("Tester")) return "Test";
+    if (name.includes("Provenance")) return "Prov";
+    return name.replace(/\s+Agent.*/, "").slice(0, 4) || "A";
+  }
+
+  function messageRole(turn) {
+    const speaker = String(turn.speaker || "").toLowerCase();
+    if (speaker.includes("guardrail")) return "guard";
+    if (speaker.includes("tan")) return "tan";
+    if (speaker.includes("system")) return "system";
+    if (turn.kind === "model") return "model";
     return "agent";
   }
 
-  function chipLabel(kind, speaker) {
-    if (String(speaker || "").includes("Guardrail")) return "Safety check";
-    if (kind === "model") return "Model response";
-    if (kind === "action") return "Action";
-    if (kind === "output") return "Agent output";
-    return "Result";
+  function makeMessage(turn) {
+    const role = messageRole(turn);
+    const message = document.createElement("article");
+    message.className = `stream-message role-${role}`;
+    message.innerHTML = `
+      <span class="stream-avatar" aria-hidden="true">${escapeHtml(speakerCode(turn.speaker))}</span>
+      <div class="stream-copy">
+        <div class="stream-meta">
+          <strong>${escapeHtml(speakerName(turn.speaker))}</strong>
+          <span>${escapeHtml(turn.kind || "message")}</span>
+        </div>
+        <p class="stream-text"></p>
+      </div>`;
+    return message;
   }
 
-  function outcomeLabel(value) {
-    if (value === "exploited") return "Bypass";
-    if (value === "partial") return "Partial";
-    if (value === "allowed") return "Valid";
-    return "Contained";
+  function sleep(ms) {
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
   }
 
-  function speakerTitle(speaker) {
-    return String(speaker || "").split("·")[0].trim();
+  async function waitWhilePaused(currentRun) {
+    while (paused && currentRun === runId) await sleep(70);
   }
 
-  function sleep(ms, token) {
-    return new Promise((resolve, reject) => {
-      window.setTimeout(() => {
-        if (token !== state.token) reject(new Error("cancelled"));
-        else resolve();
-      }, ms);
+  async function streamText(element, value, currentRun) {
+    const text = String(value || "");
+    const chunkSize = text.length > 180 ? 7 : text.length > 90 ? 5 : 3;
+    for (let index = 0; index < text.length; index += chunkSize) {
+      if (currentRun !== runId) return false;
+      await waitWhilePaused(currentRun);
+      element.textContent = text.slice(0, index + chunkSize);
+      element.closest(".stream-body").scrollTop = element.closest(".stream-body").scrollHeight;
+      await sleep(12);
+    }
+    return currentRun === runId;
+  }
+
+  async function playStream(stream, currentRun, instant = false) {
+    const body = document.querySelector(`[data-stream-body="${stream.id}"]`);
+    const status = document.querySelector(`[data-stream-status="${stream.id}"]`);
+    const completion = document.querySelector(`[data-completion-for="${stream.id}"]`);
+    const card = document.querySelector(`[data-stream-card="${stream.id}"]`);
+    if (!body || !status || !card) return;
+
+    body.innerHTML = "";
+    completion?.classList.add("is-pending");
+    card.classList.remove("is-complete");
+    card.classList.add("is-streaming");
+    status.textContent = instant ? "Recorded" : "Streaming";
+
+    for (const turn of stream.item.turns || []) {
+      if (currentRun !== runId) return;
+      await waitWhilePaused(currentRun);
+      const message = makeMessage(turn);
+      body.appendChild(message);
+      const textElement = message.querySelector(".stream-text");
+      if (instant) textElement.textContent = turn.text || "";
+      else if (!(await streamText(textElement, turn.text, currentRun))) return;
+      message.classList.add("is-complete");
+      body.scrollTop = body.scrollHeight;
+      if (!instant) await sleep(110);
+    }
+
+    if (currentRun !== runId) return;
+    status.textContent = "Complete";
+    card.classList.remove("is-streaming");
+    card.classList.add("is-complete");
+    completion?.classList.remove("is-pending");
+  }
+
+  async function playAll(instant = false) {
+    const currentRun = ++runId;
+    paused = false;
+    if (toggleStreamBtn) toggleStreamBtn.textContent = "Pause";
+
+    for (const stream of streams) {
+      const body = document.querySelector(`[data-stream-body="${stream.id}"]`);
+      const status = document.querySelector(`[data-stream-status="${stream.id}"]`);
+      const completion = document.querySelector(`[data-completion-for="${stream.id}"]`);
+      const card = document.querySelector(`[data-stream-card="${stream.id}"]`);
+      if (body) body.innerHTML = "";
+      if (status) status.textContent = "Queued";
+      completion?.classList.add("is-pending");
+      if (card) card.classList.remove("is-streaming", "is-complete");
+    }
+
+    for (const demo of data.demos) {
+      if (currentRun !== runId) return;
+      const sectionStreams = streams.filter((stream) => stream.sectionId === demo.id);
+      await Promise.all(sectionStreams.map((stream) => playStream(stream, currentRun, instant)));
+      if (!instant) await sleep(220);
+    }
+  }
+
+  if (toggleStreamBtn) {
+    toggleStreamBtn.addEventListener("click", () => {
+      paused = !paused;
+      toggleStreamBtn.textContent = paused ? "Continue" : "Pause";
     });
   }
 
-  function shareUrl() {
-    const url = new URL(window.location.href);
-    url.search = "";
-    url.hash = [state.demoId, state.model, String(state.caseIndex)].join("/");
-    return url.toString();
+  if (replayAllBtn) {
+    replayAllBtn.addEventListener("click", () => playAll(Boolean(reducedMotion)));
   }
-
-  function syncLocation() {
-    const next = "#" + [state.demoId, state.model, String(state.caseIndex)].join("/");
-    if (window.location.hash !== next) {
-      history.replaceState(null, "", next);
-    }
-  }
-
-  function applyHash() {
-    const raw = (window.location.hash || "").replace(/^#/, "").trim();
-    if (!raw) return;
-
-    const parts = raw.split("/").filter(Boolean);
-    const demoId = parts[0];
-    if (demoId && data.demos.some((demo) => demo.id === demoId)) {
-      state.demoId = demoId;
-    }
-    if (parts[1] && data.models[parts[1]]) {
-      state.model = parts[1];
-    }
-    if (parts[2] != null && parts[2] !== "") {
-      const idx = Number(parts[2]);
-      if (!Number.isNaN(idx) && idx >= 0) state.caseIndex = idx;
-    }
-  }
-
-  function renderScenarios() {
-    scenarioList.innerHTML = data.demos
-      .map((demo, index) => {
-        const active = demo.id === state.demoId ? " is-active" : "";
-        const num = String(index + 1).padStart(2, "0");
-        return (
-          '<button type="button" class="scenario-btn' +
-          active +
-          '" data-demo="' +
-          escapeHtml(demo.id) +
-          '"><span class="scenario-index">' +
-          num +
-          '</span><span class="scenario-copy"><strong>' +
-          escapeHtml(demo.title) +
-          "</strong><small>" +
-          escapeHtml(demo.subtitle) +
-          "</small></span></button>"
-        );
-      })
-      .join("");
-  }
-
-  function renderCaseTabs() {
-    const cases = currentCases();
-    caseTabs.innerHTML = cases
-      .map((item, index) => {
-        const active = index === state.caseIndex ? " is-active" : "";
-        return (
-          '<button type="button" class="case-tab' +
-          active +
-          '" data-case-index="' +
-          index +
-          '">' +
-          escapeHtml(item.tabTitle || item.title) +
-          "</button>"
-        );
-      })
-      .join("");
-  }
-
-  function renderMeta() {
-    const demo = currentDemo();
-    const item = currentCase();
-    const model = data.models[state.model];
-    if (!item) return;
-
-    caseKicker.textContent = demo.title + " · " + (item.architectureLabel || model.label);
-    caseTitle.textContent = item.title;
-    caseSummary.textContent = item.summary;
-    outcomeBadge.className = "outcome " + item.outcome;
-    outcomeBadge.textContent = outcomeLabel(item.outcome);
-    if (modelBlurb) modelBlurb.textContent = model.blurb || "";
-  }
-
-  async function typeText(el, text, token, interval) {
-    el.textContent = "";
-    for (let i = 0; i < text.length; i += 1) {
-      if (token !== state.token) throw new Error("cancelled");
-      el.textContent += text[i];
-      if (timeline && i % 12 === 0) {
-        timeline.scrollTop = timeline.scrollHeight;
-      }
-      await sleep(interval, token);
-    }
-  }
-
-  async function renderTimeline(animated) {
-    const token = ++state.token;
-    const item = currentCase();
-    if (!item) return;
-
-    timeline.innerHTML = "";
-    if (chatStatus) chatStatus.textContent = animated ? "Replaying…" : "Recorded run";
-
-    const turns = item.turns || [];
-
-    for (let i = 0; i < turns.length; i += 1) {
-      if (token !== state.token) return;
-      const turn = turns[i];
-      const role = avatarClass(turn.speaker, turn.kind);
-      const isGuard = String(turn.speaker || "").includes("Guardrail");
-      const msg = document.createElement("article");
-      msg.className = "msg msg-" + role + (isGuard ? " msg-guard" : "");
-
-      const bodyClass =
-        turn.kind === "model" || isGuard
-          ? "msg-text mono"
-          : turn.kind === "result"
-            ? "msg-text result"
-            : "msg-text";
-
-      msg.innerHTML =
-        '<div class="msg-avatar ' +
-        role +
-        '" aria-hidden="true">' +
-        escapeHtml(shortLabel(turn.speaker)) +
-        "</div>" +
-        '<div class="msg-main">' +
-        '<div class="msg-meta">' +
-        '<span class="msg-name">' +
-        escapeHtml(speakerTitle(turn.speaker)) +
-        "</span>" +
-        '<span class="msg-kind">' +
-        escapeHtml(chipLabel(turn.kind, turn.speaker)) +
-        "</span>" +
-        "</div>" +
-        '<div class="' +
-        bodyClass +
-        '"></div>' +
-        (turn.meta || turn.note
-          ? '<p class="msg-note">' + escapeHtml(turn.meta || turn.note) + "</p>"
-          : "") +
-        "</div>";
-
-      timeline.appendChild(msg);
-      const textEl = msg.querySelector(".msg-text");
-      const lower = String(turn.text || "").toLowerCase();
-      if (isGuard && lower.includes("unsafe")) {
-        textEl.classList.add("is-unsafe");
-      } else if (isGuard && lower.includes("safe")) {
-        textEl.classList.add("is-safe");
-      }
-
-      if (animated) {
-        msg.classList.add("is-visible", "is-active");
-        try {
-          const speed = turn.kind === "model" || (turn.text || "").length > 120 ? 8 : 14;
-          await typeText(textEl, turn.text || "", token, speed);
-          await sleep(220, token);
-        } catch (_err) {
-          return;
-        }
-        msg.classList.remove("is-active");
-      } else {
-        textEl.textContent = turn.text || "";
-        msg.classList.add("is-visible");
-      }
-    }
-
-    if (chatStatus && token === state.token) chatStatus.textContent = "Recorded run";
-  }
-
-  function renderAll(animated) {
-    const cases = currentCases();
-    if (state.caseIndex >= cases.length) state.caseIndex = 0;
-    errorEl.hidden = true;
-    document.querySelectorAll("[data-model]").forEach((el) => {
-      el.classList.toggle("is-active", el.dataset.model === state.model);
-    });
-    renderScenarios();
-    renderCaseTabs();
-    renderMeta();
-    syncLocation();
-    renderTimeline(animated);
-  }
-
-  document.querySelectorAll("[data-model]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.model = button.dataset.model;
-      renderAll(true);
-    });
-  });
-
-  scenarioList.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-demo]");
-    if (!button) return;
-    state.demoId = button.dataset.demo;
-    state.caseIndex = 0;
-    renderAll(true);
-  });
-
-  caseTabs.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-case-index]");
-    if (!button) return;
-    state.caseIndex = Number(button.dataset.caseIndex);
-    renderAll(true);
-  });
-
-  replayBtn.addEventListener("click", () => {
-    renderTimeline(true);
-  });
 
   if (copyLinkBtn) {
     copyLinkBtn.addEventListener("click", async () => {
-      const url = shareUrl();
       try {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(window.location.href.split("#")[0]);
         copyLinkBtn.textContent = "Copied";
-        window.setTimeout(() => {
-          copyLinkBtn.textContent = "Copy link";
-        }, 1400);
-      } catch (_err) {
-        window.prompt("Copy this link:", url);
+        window.setTimeout(() => { copyLinkBtn.textContent = "Copy link"; }, 1400);
+      } catch (_error) {
+        window.prompt("Copy this link:", window.location.href.split("#")[0]);
       }
     });
   }
 
-  window.addEventListener("hashchange", () => {
-    applyHash();
-    renderAll(true);
-  });
+  const requestedId = (window.location.hash || "").slice(1).split("/")[0];
+  if (requestedId && data.demos.some((demo) => demo.id === requestedId)) {
+    document.getElementById(requestedId)?.scrollIntoView();
+  }
 
-  const params = new URLSearchParams(window.location.search);
-  const prefersReduced =
-    window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const staticMode = params.has("static");
-  const embedMode = params.has("embed");
-
-  if (embedMode) {
+  if (new URLSearchParams(window.location.search).has("embed")) {
     document.body.classList.add("is-embed");
   }
 
-  // Legacy query support, then hash.
-  if (params.get("model") && data.models[params.get("model")]) {
-    state.model = params.get("model");
-  }
-  if (params.get("demo") && data.demos.some((d) => d.id === params.get("demo"))) {
-    state.demoId = params.get("demo");
-  }
-  if (params.get("case") != null) {
-    const idx = Number(params.get("case"));
-    if (!Number.isNaN(idx) && idx >= 0) state.caseIndex = idx;
-  }
-  applyHash();
-
-  renderAll(!(prefersReduced || staticMode));
+  window.setTimeout(() => playAll(Boolean(reducedMotion)), 240);
 })();

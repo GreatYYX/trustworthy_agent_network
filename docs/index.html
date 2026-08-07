@@ -106,8 +106,8 @@
           <p class="section-kicker">Interactive demo</p>
           <h2>Bolted-on guardrail case study</h2>
           <p>
-            Recorded multi-agent conversations under <strong>gpt-5.6-sol</strong> and
-            <strong>claude-opus-5</strong>. This embed does not call a model API.
+            All four failure modes, shown at once across <strong>gpt-5.6-sol</strong>,
+            <strong>claude-opus-5</strong>, and the model-independent TAN defense.
             <a href="./demo.html">Open fullscreen →</a>
           </p>
         </div>
@@ -115,7 +115,7 @@
           <iframe
             class="demo-frame"
             title="Interactive guardrail case study"
-            src="./demo.html?embed=1#adversarial/sol/0"
+            src="./demo.html?embed=1"
             loading="lazy"
           ></iframe>
         </div>
@@ -235,5 +235,21 @@
         <em>Trustworthy Agent Network: Trust in Agent Networks Must Be Baked In, Not Bolted On.</em>
       </p>
     </footer>
+    <script>
+      const demoFrame = document.querySelector(".demo-frame");
+      if (demoFrame) {
+        const fitDemoFrame = () => {
+          const page = demoFrame.contentDocument?.documentElement;
+          if (page) demoFrame.style.height = `${page.scrollHeight}px`;
+        };
+        demoFrame.addEventListener("load", () => {
+          fitDemoFrame();
+          const page = demoFrame.contentDocument?.documentElement;
+          if (page && "ResizeObserver" in window) {
+            new ResizeObserver(fitDemoFrame).observe(page);
+          }
+        });
+      }
+    </script>
   </body>
 </html>

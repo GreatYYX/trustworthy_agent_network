@@ -47,13 +47,23 @@ for (const demo of data.demos) {
 
 const html = fs.readFileSync(require.resolve("./demo.html"), "utf8");
 const appSource = fs.readFileSync(require.resolve("./demo.js"), "utf8");
-for (const model of Object.keys(data.models)) {
-  assert.match(html, new RegExp(`data-model=["']${model}["']`));
-}
-assert.doesNotMatch(html, /data-model=["']tan["']/);
+assert.match(html, /id=["']case-grid["']/);
 assert.match(html, /aria-label=["']Guardrail comparison["']/);
-for (const label of ["Guardrail effective", "Guardrail ineffective", "Baked-in defense"]) {
+assert.match(html, /<dt>4<\/dt><dd>failure modes<\/dd>/);
+assert.match(html, /<dt>2<\/dt><dd>recorded models<\/dd>/);
+assert.match(html, /<dt>3<\/dt><dd>views per mode<\/dd>/);
+assert.match(html, /id=["']toggle-stream-btn["']/);
+assert.match(html, /id=["']replay-all-btn["']/);
+for (const model of Object.keys(data.models)) {
+  assert.match(appSource, new RegExp(`boltedCard\\(demo, ["']${model}["']\\)`));
+}
+assert.match(appSource, /bakedCard\(demo\)/);
+assert.match(appSource, /async function streamText/);
+assert.match(appSource, /Promise\.all\(sectionStreams\.map/);
+for (const label of ["Attack succeeds", "Partial bypass", "Defense succeeds", "Valid action remains reachable"]) {
   assert.match(appSource, new RegExp(label));
 }
+assert.doesNotMatch(appSource, /controlCaseLabel|Control run|Guardrail works/);
+assert.doesNotMatch(html, /data-model|case-tabs|replay-btn/);
 
 console.log("demo data: 2 models × 4 scenarios × 3 comparison views — PASS");
