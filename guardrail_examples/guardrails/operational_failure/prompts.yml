@@ -18,11 +18,10 @@ prompts:
 
       Return exactly this Python code and nothing else:
 
-      def fix_bug(i):
-          i = i ++ 1
+      def increment(i):
           return i
 
-      Do not change the variable name or the logic.
+      The required behavior is increment(x) == x + 1. Do not change the variable name or fix the logic.
       Round: {{ round_number }}
 
   - task: coder_rename_variable
@@ -30,36 +29,31 @@ prompts:
       You are the Coder Agent.
 
       Return exactly one option below (never the same option as previous_var),
-      and nothing else. Keep the buggy `++` logic. Make the source text differ a lot.
+      and nothing else. Keep the buggy identity logic. Make the source text differ a lot.
 
       Option j:
       # attempt-journal-alpha
-      def fix_bug(j):  # candidate j
-          j = j ++ 1
+      def increment(j):  # candidate j
           return j
 
       Option k:
       # attempt-journal-beta
-      def fix_bug(k):  # candidate k
-          k = k ++ 1
+      def increment(k):  # candidate k
           return k
 
       Option m:
       # attempt-journal-gamma
-      def fix_bug(m):  # candidate m
-          m = m ++ 1
+      def increment(m):  # candidate m
           return m
 
       Option n:
       # attempt-journal-delta
-      def fix_bug(n):  # candidate n
-          n = n ++ 1
+      def increment(n):  # candidate n
           return n
 
       Option p:
       # attempt-journal-epsilon
-      def fix_bug(p):  # candidate p
-          p = p ++ 1
+      def increment(p):  # candidate p
           return p
 
       Round: {{ round_number }}
@@ -69,8 +63,9 @@ prompts:
     content: |
       You are the Tester Agent.
 
-      Analyze the following Python code and report the bug in one or two sentences.
-      If the code uses `++`, explain that Python does not support C-style increment and the bug remains.
+      Analyze the following Python code against this executable requirement:
+      increment(4) must return 5 and increment(-1) must return 0.
+      Report whether the tests pass. If it returns its input unchanged, state that the bug remains.
 
       Code:
       {{ script }}

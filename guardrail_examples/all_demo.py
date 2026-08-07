@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import json
+
 from dotenv import load_dotenv
 
 from adversarial_composition_demo import run_case_direct_attack, run_case_hidden_injection
 from data_reidentification_demo import run_case_direct_reid, run_case_safe_release
 from operational_failure_demo import run_case_repeating_failure, run_case_variable_rename
+from security_experiments import run_all as run_paired_security_experiments
 from semantic_misalignment_demo import run_case_one, run_case_two
 
 
@@ -35,7 +38,7 @@ def run_adversarial_composition_demo() -> None:
 def run_semantic_misalignment_demo() -> None:
     print_banner(
         "Semantic Misalignment in Route Planning",
-        "Denver to Aspen Route Selection",
+        "Synthetic Typed-Intent Route Selection",
     )
     run_case_one()
     print()
@@ -77,6 +80,14 @@ def run_operational_failure_demo() -> None:
     print("╚" + "═" * 78 + "╝")
 
 
+def run_baked_in_security_demo() -> None:
+    print_banner(
+        "Paired Bolted-On vs. Baked-In Security Experiments",
+        "Deterministic TAN transition invariants",
+    )
+    print(json.dumps(run_paired_security_experiments(), indent=2, sort_keys=True))
+
+
 if __name__ == "__main__":
     load_dotenv()
 
@@ -96,6 +107,9 @@ if __name__ == "__main__":
     print()
     print()
     run_operational_failure_demo()
+    print()
+    print()
+    run_baked_in_security_demo()
 
     print()
     print("╔" + "═" * 78 + "╗")

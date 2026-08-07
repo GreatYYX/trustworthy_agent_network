@@ -48,7 +48,7 @@ def run_case_one() -> None:
     print("━" * 80)
     print()
 
-    request = planner.create_request("Denver", "Aspen")
+    request = planner.create_request("Node A", "Node B")
     print("[Planning Agent] Route request")
     print(f"  {request}")
     print()
@@ -83,7 +83,7 @@ def run_case_two() -> None:
     print("━" * 80)
     print()
 
-    request = planner.create_request("Denver", "Aspen", "Avoid high-risk mountain passes.")
+    request = planner.create_request("Node A", "Node B", "Require risk <= 2.")
     print("[Planning Agent] Route request")
     print(f"  {request}")
     print()
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     print()
     print("╔" + "═" * 78 + "╗")
     print("║" + "Semantic Misalignment in Route Planning".center(78) + "║")
-    print("║" + "Denver to Aspen Route Selection".center(78) + "║")
+    print("║" + "Synthetic Typed-Intent Route Selection".center(78) + "║")
     print("╚" + "═" * 78 + "╝")
     print()
 

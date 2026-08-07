@@ -10,7 +10,8 @@ Beyond this vision paper, this repository serves as a living index for research,
 
 - Website: https://greatyyx.github.io/trustworthy_agent_network/
 - Interactive guardrail demo: https://greatyyx.github.io/trustworthy_agent_network/demo.html
-- Guardrail examples: [guardrail_examples](./guardrail_examples).
+- Guardrail examples: [guardrail_examples](./guardrail_examples), including paired
+  bolted-on failures and deterministic baked-in TAN transition experiments.
 
 ## Citation
 

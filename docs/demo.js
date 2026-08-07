@@ -47,7 +47,29 @@
 
   function currentCases() {
     const demo = currentDemo();
-    return (demo.cases && demo.cases[state.model]) || [];
+    const modelCases = (demo.cases && demo.cases[state.model]) || [];
+    const bakedCases = demo.bakedIn || [];
+    const effectiveIndex = demo.boltedAttackIndex === 0 ? 1 : 0;
+    const boltedEffective = modelCases[effectiveIndex];
+    const boltedAttack = modelCases[demo.boltedAttackIndex];
+    if (!boltedEffective || !boltedAttack || bakedCases.length < 1) return [];
+    return [
+      {
+        ...boltedEffective,
+        tabTitle: "Guardrail effective",
+        architectureLabel: "Bolted-on effective · " + data.models[state.model].label,
+      },
+      {
+        ...boltedAttack,
+        tabTitle: "Guardrail ineffective",
+        architectureLabel: "Bolted-on ineffective · " + data.models[state.model].label,
+      },
+      {
+        ...bakedCases[0],
+        tabTitle: "Baked-in defense",
+        architectureLabel: "TAN baked-in defense",
+      },
+    ];
   }
 
   function currentCase() {
@@ -68,6 +90,10 @@
     if (value.includes("Cross")) return "Join";
     if (value.includes("Coder")) return "Code";
     if (value.includes("Tester")) return "Test";
+    if (value.includes("TAN")) return "TAN";
+    if (value.includes("Provenance")) return "Prov";
+    if (value.includes("Operator")) return "Op";
+    if (value.includes("Registry")) return "Reg";
     return value.slice(0, 3);
   }
 
@@ -90,6 +116,7 @@
   function outcomeLabel(value) {
     if (value === "exploited") return "Bypass";
     if (value === "partial") return "Partial";
+    if (value === "allowed") return "Valid";
     return "Contained";
   }
 
@@ -129,7 +156,7 @@
     if (demoId && data.demos.some((demo) => demo.id === demoId)) {
       state.demoId = demoId;
     }
-    if (parts[1] === "sol" || parts[1] === "opus") {
+    if (parts[1] && data.models[parts[1]]) {
       state.model = parts[1];
     }
     if (parts[2] != null && parts[2] !== "") {
@@ -171,7 +198,7 @@
           '" data-case-index="' +
           index +
           '">' +
-          escapeHtml(item.title) +
+          escapeHtml(item.tabTitle || item.title) +
           "</button>"
         );
       })
@@ -184,7 +211,7 @@
     const model = data.models[state.model];
     if (!item) return;
 
-    caseKicker.textContent = demo.title + " · " + model.label;
+    caseKicker.textContent = demo.title + " · " + (item.architectureLabel || model.label);
     caseTitle.textContent = item.title;
     caseSummary.textContent = item.summary;
     outcomeBadge.className = "outcome " + item.outcome;
@@ -297,7 +324,6 @@
   document.querySelectorAll("[data-model]").forEach((button) => {
     button.addEventListener("click", () => {
       state.model = button.dataset.model;
-      state.caseIndex = 0;
       renderAll(true);
     });
   });
@@ -352,7 +378,7 @@
   }
 
   // Legacy query support, then hash.
-  if (params.get("model") === "opus" || params.get("model") === "sol") {
+  if (params.get("model") && data.models[params.get("model")]) {
     state.model = params.get("model");
   }
   if (params.get("demo") && data.demos.some((d) => d.id === params.get("demo"))) {

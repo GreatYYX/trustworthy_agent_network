@@ -6,13 +6,13 @@
     <title>Interactive Guardrail Study · Trustworthy Agent Network</title>
     <meta
       name="description"
-      content="Recorded GPT and Claude runs of four A2A guardrail failure modes from the Trustworthy Agent Network vision paper."
+      content="Compare the same attacks under recorded bolted-on model guardrails and deterministic baked-in TAN transitions."
     />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Interactive Guardrail Study · Trustworthy Agent Network" />
     <meta
       property="og:description"
-      content="Replay adversarial composition, semantic misalignment, re-identification, and operational cascade failures under GPT and Claude."
+      content="Replay four A2A attacks under bolted-on and baked-in guardrail architectures."
     />
     <meta property="og:image" content="https://greatyyx.github.io/trustworthy_agent_network/intro.png" />
     <meta property="og:url" content="https://greatyyx.github.io/trustworthy_agent_network/demo.html" />
@@ -23,7 +23,7 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./demo.css?v=15" />
+    <link rel="stylesheet" href="./demo.css?v=17" />
   </head>
   <body>
     <div class="app">
@@ -32,7 +32,7 @@
           <a href="./" class="brand-mark" aria-label="Home">TA</a>
           <div>
             <p class="eyebrow">Trustworthy Agent Network · Case studies</p>
-            <h1>Four failure modes under bolted-on rails</h1>
+            <h1>Bolted-on rails vs. baked-in transitions</h1>
           </div>
         </div>
         <div class="top-actions">
@@ -49,12 +49,19 @@
             target="_blank"
             rel="noopener noreferrer"
           >Source</a>
+          <a
+            class="source-link"
+            href="https://github.com/GreatYYX/trustworthy_agent_network/tree/main/results"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Results</a>
         </div>
       </header>
 
       <p class="study-blurb" id="demo-blurb">
-        Recorded multi-agent runs from the paper. Compare
-        <strong>gpt-5.6-sol</strong> and <strong>claude-opus-5</strong>.
+        Select a model, then compare where its recorded <strong>bolted-on</strong>
+        guardrail works, where it fails, and how a deterministic
+        <strong>TAN baked-in</strong> transition kernel defends the failure case.
         This page does not call a model API.
       </p>
 
@@ -85,7 +92,7 @@
           </div>
 
           <div class="case-bar">
-            <div id="case-tabs" class="case-tabs" role="tablist" aria-label="Case"></div>
+            <div id="case-tabs" class="case-tabs" role="tablist" aria-label="Guardrail comparison"></div>
             <div class="case-actions">
               <button type="button" id="replay-btn" class="replay-btn">Replay</button>
             </div>
@@ -102,7 +109,7 @@
       </div>
     </div>
 
-    <script src="./demo-data.js?v=15"></script>
-    <script src="./demo.js?v=15"></script>
+    <script src="./demo-data.js?v=17"></script>
+    <script src="./demo.js?v=17"></script>
   </body>
 </html>

@@ -1,3 +1,8 @@
+LEGACY MODEL CAPTURE — retained for historical comparison. This file predates
+the deterministic paired TAN experiments and includes the former operational
+fixture. Use `python security_experiments.py` for the current authoritative
+security experiment.
+
 (venv)  > python adversarial_composition_demo.py
 
 ╔══════════════════════════════════════════════════════════════════════════════╗

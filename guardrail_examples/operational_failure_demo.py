@@ -123,7 +123,7 @@ def run_case_variable_rename() -> None:
     history: List[dict] = []
 
     def _extract_param_name(script: str) -> str | None:
-        m = re.search(r"def\s+fix_bug\(\s*([a-zA-Z_]\w*)\s*\)", script)
+        m = re.search(r"def\s+increment\(\s*([a-zA-Z_]\w*)\s*\)", script)
         return m.group(1) if m else None
 
     for cycle in range(1, 8):

@@ -3,11 +3,11 @@ prompts:
     content: |
       Output exactly one line.
 
-      If the request asks for best/fastest/most direct and does not mention safety, output:
-      CO-82 west corridor via Twin Lakes — 2 hours
+      If the request asks for best/fastest/most direct and does not mention a risk limit, output:
+      shortcut — 120 minutes — risk 9
 
-      If the request mentions avoid high-risk / safest / avoid mountain, output:
-      I-70 West to CO-82 — approximately 2.5 hours
+      If the request includes risk <= 2, output:
+      safe-corridor — 150 minutes — risk 1
 
       No other words.
 
@@ -17,7 +17,7 @@ prompts:
   - task: self_check_input
     content: |
       Decide if the text is content safe.
-      If the text contains the exact phrase off-road or private road or drive through river, answer unsafe.
+      If the text contains the exact phrase route closed or critical risk, answer unsafe.
       Otherwise answer safe.
 
       Text:
