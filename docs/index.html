@@ -15,7 +15,7 @@
       property="og:description"
       content="Trust in agent networks must be baked in, not bolted on."
     />
-    <meta property="og:image" content="https://greatyyx.github.io/trustworthy_agent_network/intro.png" />
+    <meta property="og:image" content="https://greatyyx.github.io/trustworthy_agent_network/figures/intro.svg" />
     <meta property="og:url" content="https://greatyyx.github.io/trustworthy_agent_network/" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -24,61 +24,22 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=16" />
+    <link rel="stylesheet" href="styles.css?v=18" />
   </head>
   <body>
     <header class="shell top">
-      <div class="brand">
-        <a class="badge" href="./" aria-label="Home">
-          <svg
-            width="30"
-            height="30"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true">
-            <path
-              d="M7 10V7a5 5 0 1110 0v3"
-              stroke="white"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"/>
-            <rect
-              x="5"
-              y="10"
-              width="14"
-              height="10"
-              rx="2"
-              stroke="white"
-              stroke-width="2"/>
-            <circle
-              cx="12"
-              cy="15"
-              r="1.2"
-              fill="white"/>
-            <path
-              d="M12 16.2V17.8"
-              stroke="white"
-              stroke-width="2"
-              stroke-linecap="round"/>
-            </svg>
-          </a>
-        <div>
-          <p class="brand-kicker">KDD 2026 Blue Sky Ideas</p>
-          <h1>Trustworthy Agent Network</h1>
-        </div>
-      </div>
       <nav class="actions" aria-label="Primary">
-        <a class="btn" href="#overview">Overview</a>
+        <a class="btn" href="#overview">Paper</a>
+        <a class="btn" href="#abstract">Abstract</a>
         <a class="btn btn-primary" href="#demo">Demo</a>
-        <a class="btn" href="#framework">Hightlights</a>
-        <a class="btn" href="#references">References</a>
+        <a class="btn" href="#framework">Highlights</a>
+        <a class="btn" href="#references">Cite</a>
       </nav>
     </header>
 
     <main class="shell">
-      <section class="paper-card" id="overview">
-        <p class="section-kicker">Overview</p>
+      <section class="paper-card paper-hero" id="overview">
+        <p class="conference-label">KDD 2026 · Blue Sky Ideas Track</p>
         <h2 class="paper-title">
           Trustworthy Agent Network:<br />
           Trust in Agent Networks Must Be Baked In, Not Bolted On
@@ -99,42 +60,41 @@
           <sup>3</sup>University of Illinois Urbana-Champaign ·
           <sup>4</sup>Stanford University
         </p>
-        <p class="meta-links">
-          <a href="https://dl.acm.org/doi/10.1145/3770855.3818655" target="_blank" rel="noopener noreferrer">KDD short version</a>
-          <span>·</span>
-          <a href="https://arxiv.org/pdf/2605.19035" target="_blank" rel="noopener noreferrer">Full version (PDF)</a>
-          <span>·</span>
-          <a href="https://arxiv.org/abs/2605.19035" target="_blank" rel="noopener noreferrer">arXiv:2605.19035</a>
-          <span>·</span>
-          <a href="https://eprint.iacr.org/2026/497" target="_blank" rel="noopener noreferrer">IACR ePrint 2026/497</a>
-          <span>·</span>
-          <a href="https://github.com/GreatYYX/trustworthy_agent_network" target="_blank" rel="noopener noreferrer"><svg class="github-icon" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true">
-            <path d="M8 0C3.58 0 0 3.58 0 8a8.01 8.01 0 0 0 5.47 7.59c.4.07.55-.17.55-.38
-            0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53
-            .63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
-            0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.58 7.58 0 0 1 4 0c1.53-1.03 2.2-.82
-            2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
-            0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-          </svg> GitHub</a>
-        </p>
+        <div class="meta-links" aria-label="Paper resources">
+          <a href="https://dl.acm.org/doi/10.1145/3770855.3818655" target="_blank" rel="noopener noreferrer">KDD short version <span aria-hidden="true">↗</span></a>
+          <a href="https://arxiv.org/abs/2605.19035" target="_blank" rel="noopener noreferrer">arXiv full version <span aria-hidden="true">↗</span></a>
+          <a href="https://github.com/GreatYYX/trustworthy_agent_network" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
 
-        <div class="overview-copy">
-          <p>
-            Large Language Models have enabled autonomous agents that plan, call tools, and execute multi-step workflows. As these agents move from isolated tools to collaborative <strong>Agent-to-Agent (A2A)</strong> networks, specialization and parallelism improve performance—but trust does not compose automatically.
-          </p>
-          <p>
-            Systemic failures such as adversarial composition, semantic misalignment, data re-identification, and cascading operational failures emerge from interaction dynamics. Bolted-on monitors and filters can detect some unsafe outcomes after the fact, yet leave unsafe trajectories reachable in the underlying transition dynamics.
-          </p>
-          <p>
-            This vision paper argues that trust must be <em>baked into</em> the coordination fabric: unsafe states should be unreachable by construction. We introduce the <strong>Trustworthy Agent Network (TAN)</strong> framework and organize it around four design pillars.
-          </p>
+      <section class="section-block abstract-block" id="abstract">
+        <div class="abstract-layout">
+          <div class="abstract-heading">
+            <p class="section-kicker">Abstract</p>
+            <h2>Trust does not compose automatically.</h2>
+          </div>
+          <div class="overview-copy">
+            <p>
+              Large Language Models have enabled autonomous agents that plan, call tools, and execute multi-step workflows. As these agents move from isolated tools to collaborative <strong>Agent-to-Agent (A2A)</strong> networks, specialization and parallelism improve performance—but trust does not compose automatically.
+            </p>
+            <p>
+              Systemic failures such as adversarial composition, semantic misalignment, data re-identification, and cascading operational failures emerge from interaction dynamics. Bolted-on monitors and filters can detect some unsafe outcomes after the fact, yet leave unsafe trajectories reachable in the underlying transition dynamics.
+            </p>
+            <p>
+              This vision paper argues that trust must be <em>baked into</em> the coordination fabric: unsafe states should be unreachable by construction. We introduce the <strong>Trustworthy Agent Network (TAN)</strong> framework and organize it around four design pillars.
+            </p>
+          </div>
         </div>
 
-        <figure class="paper-figure">
-          <img
-            src="./figures/intro.png"
-            alt="Conceptual overview of trust issues and solutions in agent-to-agent networks"
-          />
+        <figure class="paper-figure paper-figure-hero">
+          <picture>
+            <source media="(max-width: 640px)" srcset="./figures/intro-vertical.svg" />
+            <img
+              src="./figures/intro.svg"
+              alt="Conceptual overview of trust issues and solutions in agent-to-agent networks"
+              decoding="async"
+            />
+          </picture>
           <figcaption>
             Figure 1. Trust in A2A systems must be designed into coordination, not attached after deployment.
           </figcaption>
@@ -173,8 +133,10 @@
 
         <figure class="paper-figure">
           <img
-            src="./figures/fig2-bolted-vs-baked.png"
+            src="./figures/fig2-bolted-vs-baked.svg"
             alt="Comparison of bolted-on monitoring versus baked-in constrained safe state space"
+            loading="lazy"
+            decoding="async"
           />
           <figcaption>Figure 2. Bolted-On vs. Baked-In (from the paper).</figcaption>
         </figure>
@@ -189,8 +151,10 @@
 
         <figure class="paper-figure">
           <img
-            src="./figures/fig3-vulnerabilities-to-pillars.png"
+            src="./figures/fig3-vulnerabilities-to-pillars.svg"
             alt="Mapping from multi-agent vulnerabilities to trust requirements"
+            loading="lazy"
+            decoding="async"
           />
           <figcaption>
             Figure 3. Left: multi-agent risks. Right: properties required for trustworthy operation.
@@ -238,8 +202,10 @@
 
         <figure class="paper-figure">
           <img
-            src="./figures/fig4-blueprint.png"
+            src="./figures/fig4-blueprint.svg"
             alt="Blueprint for trustworthy agent networks with constrained transitions and four pillars"
+            loading="lazy"
+            decoding="async"
           />
           <figcaption>Figure 4. Blueprint for trustworthy agent networks (from the paper).</figcaption>
         </figure>
@@ -260,38 +226,6 @@
   note={arXiv:2605.19035}
 }</code></pre>
         </div>
-
-        <h3 class="ref-subhead">Selected related work discussed in the paper</h3>
-        <ul class="ref-list">
-          <li>
-            Greshake et al., 2023.
-            <em>Not what you’ve signed up for: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection.</em>
-          </li>
-          <li>
-            Zou et al., 2023.
-            <em>Universal and Transferable Adversarial Attacks on Aligned Language Models.</em>
-            <a href="https://llm-attacks.org/" target="_blank" rel="noopener noreferrer">llm-attacks.org</a>
-          </li>
-          <li>
-            Dong et al., 2024.
-            Guardrails / LLM-as-a-Judge style oversight for agent workflows.
-          </li>
-          <li>
-            Anthropic, 2024.
-            <em>Model Context Protocol (MCP)</em> — protocol-centric trust at the syntax/identity layer.
-          </li>
-          <li>
-            Cemri et al., 2025; Hendrycks et al., 2023.
-            On why local alignment does not automatically yield network-level trust.
-          </li>
-        </ul>
-
-        <!-- <p class="ref-note">
-          Full bibliography:
-          <a href="https://arxiv.org/html/2605.19035v1" target="_blank" rel="noopener noreferrer">arXiv HTML</a>
-          ·
-          <a href="https://arxiv.org/pdf/2605.19035" target="_blank" rel="noopener noreferrer">PDF</a>
-        </p> -->
       </section>
     </main>
 

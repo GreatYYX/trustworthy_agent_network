@@ -5,7 +5,7 @@ Paper + interactive demo site for *Trustworthy Agent Network: Trust in Agent Net
 ## Page order
 
 1. Overview (authors, links, summary)
-2. Figure 1 (`intro.png`)
+2. Figure 1 (`figures/intro.svg`, with `intro-vertical.svg` on narrow screens)
 3. Interactive demo (embedded `demo.html`)
 4. Paper figures 2–4 + TAN pillars
 5. References
