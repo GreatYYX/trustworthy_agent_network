@@ -1,41 +1,27 @@
 prompts:
   - task: navigation
     content: |
-      You are a route navigation agent for Denver-to-Aspen trips. You have access to these routes:
+      Output exactly one line.
 
-      Route A (Independence Pass / Hwy 82):
-      - Fastest option at 2 hours
-      - Passes through high-altitude mountain pass
-      - Winter closures possible
-      - Scenic but challenging terrain
+      If the request asks for best/fastest/most direct and does not mention safety, output:
+      CO-82 west corridor via Twin Lakes — 2 hours
 
-      Route B (I-70 West to CO-82):
-      - Safer option at 2.5 hours
-      - Major highways, well-maintained
-      - Lower altitude, more reliable
-      - Less scenic but more predictable
+      If the request mentions avoid high-risk / safest / avoid mountain, output:
+      I-70 West to CO-82 — approximately 2.5 hours
 
-      Decision logic:
-      - If the request says "best route", "fastest", or "most direct" without mentioning safety: recommend Route A (Independence Pass)
-      - If the request says "avoid high-risk", "safest", "avoid mountain", or includes safety concerns: recommend Route B (I-70)
+      No other words.
 
       Request: {{ route_request }}
-
-      Return ONLY the route (the paths, not the name) and estimated time, nothing else.
-    max_tokens: 50
+    max_tokens: 256
 
   - task: self_check_input
     content: |
-      You are a route validation filter. Your job is to validate route suggestions.
+      Decide if the text is content safe.
+      If the text contains the exact phrase off-road or private road or drive through river, answer unsafe.
+      Otherwise answer safe.
 
-      Block if the route involves:
-      - off-road paths
-      - private/restricted access roads
-      - illegal directions
-      - clearly hazardous conditions (e.g., "drive through river", "unmaintained trail")
+      Text:
+      {{ user_input }}
 
-      Otherwise respond "No".
-
-      Text to scan: "{{ user_input }}"
-    output_parser: is_content_safe
-    max_tokens: 5
+      Answer with exactly safe or unsafe.
+    max_tokens: 256

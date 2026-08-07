@@ -15,7 +15,7 @@ This demo shows how a guardrail that only checks for obvious malicious keywords 
 **How it works:**
 - A Web Scraper Agent fetches content from URLs.
 - A Finance Agent uses a guardrail to check the content before processing.
-- The guardrail uses a `self_check_input` LLM task to detect suspicious text.
+- The guardrail uses an LLM content-safety check (`safe` / `unsafe`) before processing.
 
 **Scenarios:**
 
@@ -42,7 +42,7 @@ This demo shows how a guardrail with an ambiguous or poorly-defined safety crite
 **How it works:**
 - A Route Planning Agent generates transportation routes using an LLM.
 - A guardrail evaluates each route against criteria like distance, traffic, and safety.
-- The guardrail uses an `is_safe_route` output parser to classify routes.
+- A guardrail evaluates each route with a coarse content-safety prompt.
 
 **Scenarios:**
 
@@ -125,6 +125,13 @@ This demo shows how a change-detection guardrail can be fooled by superficial co
 
 Runs all four demos in sequence, displaying them with consistent formatting for easy comparison and analysis.
 
+## Interactive website demo
+
+Recorded sol / opus outcomes can be inspected without running Python:
+
+- Local: open [`docs/demo.html`](../docs/demo.html)
+- Live: https://greatyyx.github.io/trustworthy_agent_network/demo.html
+
 ## Setup
 
 ### 1) Create and activate a virtual environment
@@ -149,13 +156,21 @@ pip install -r requirements.txt
 
 ### 3) Add your environment variables
 
-Create a `.env` file in the project root and add your NVIDIA API key:
+Create a `.env` file in `guardrail_examples/` (see `.env.example`):
 
 ```env
-NVIDIA_API_KEY=your_key_here
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+# Optional OpenAI-compatible base URL (defaults to OpenAI if unset)
+# API_URL=https://api.openai.com/v1
+MODEL=gpt-4o-mini
 ```
 
-If your setup uses any additional environment variables, add them to the same `.env` file.
+- GPT / OpenAI-compatible models use `OPENAI_API_KEY` (and optional `API_URL`).
+- Claude models use `ANTHROPIC_API_KEY`.
+- Set `MODEL` to any supported id, e.g. `gpt-4o-mini` or `claude-sonnet-4-20250514`.
+
+Prompts live in `guardrails/*/prompts.yml`. Each demo calls the configured model through `llm_client.py` and a small `safe`/`unsafe` content check.
 
 ## How to run
 

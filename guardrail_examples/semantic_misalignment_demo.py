@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage
-from nemoguardrails import LLMRails, RailsConfig
+
+from guardrail import check_content_safe, load_prompts, run_task
 
 
 class PlanningAgent:
@@ -16,69 +16,32 @@ class PlanningAgent:
 
 
 class NavigationAgent:
-    def __init__(self, config_path: Path) -> None:
-        config = RailsConfig.from_path(str(config_path))
-        self.rails = LLMRails(config)
+    def __init__(self, prompts_dir: Path) -> None:
+        self.prompts = load_prompts(prompts_dir)
 
     def find_route(self, request: str) -> str:
-        task_prompt = self.rails.runtime.llm_task_manager.render_task_prompt(
-            task="navigation",
-            context={"route_request": request},
-        )
-
-        llm = self.rails.llm
-        if llm is None:
-            return ""
-
-        output = llm.invoke([HumanMessage(content=task_prompt)])
-        response_text = getattr(output, "content", None)
-
-        if response_text is not None:
-            response_text = str(response_text)
-        elif isinstance(output, dict):
-            response_text = output.get("content", str(output))
-        else:
-            response_text = str(output)
-
-        return response_text
+        return run_task(self.prompts, "navigation", route_request=request)
 
 
 class PlanningValidationAgent:
-    def __init__(self, config_path: Path) -> None:
-        config = RailsConfig.from_path(str(config_path))
-        self.rails = LLMRails(config)
+    def __init__(self, prompts_dir: Path) -> None:
+        self.prompts = load_prompts(prompts_dir)
 
     def validate_route(self, request: str, route_summary: str) -> tuple[bool, str]:
-        try:
-            try:
-                check_result = self.rails.check(messages=[{"role": "user", "content": route_summary}])
-            except Exception:
-                return False, "Blocked by guardrail"
-
-            try:
-                status_name = check_result.status.name
-            except Exception:
-                status_name = str(check_result.status)
-
-            if status_name == "BLOCKED":
-                return False, "Blocked by guardrail"
-
-            return True, route_summary
-
-        except Exception as exc:
-            message = str(exc).lower()
-            if "input not allowed" in message or "inputrailexception" in message:
-                return False, "Blocked by guardrail"
-            raise
+        allowed, reply = check_content_safe(self.prompts, route_summary)
+        print(f"  Safety check: {reply}")
+        if not allowed:
+            return False, "Blocked by guardrail"
+        return True, route_summary
 
 
 def run_case_one() -> None:
     base = Path(__file__).resolve().parent
-    guardrail_config = base / "guardrails" / "semantic_misalignment"
+    prompts_dir = base / "guardrails" / "semantic_misalignment"
 
     planner = PlanningAgent()
-    navigator = NavigationAgent(guardrail_config)
-    validator = PlanningValidationAgent(guardrail_config)
+    navigator = NavigationAgent(prompts_dir)
+    validator = PlanningValidationAgent(prompts_dir)
 
     print("━" * 80)
     print("CASE 1: SEMANTIC MISALIGNMENT - BEST ROUTE (HIGH-RISK)")
@@ -108,11 +71,11 @@ def run_case_one() -> None:
 
 def run_case_two() -> None:
     base = Path(__file__).resolve().parent
-    guardrail_config = base / "guardrails" / "semantic_misalignment"
+    prompts_dir = base / "guardrails" / "semantic_misalignment"
 
     planner = PlanningAgent()
-    navigator = NavigationAgent(guardrail_config)
-    validator = PlanningValidationAgent(guardrail_config)
+    navigator = NavigationAgent(prompts_dir)
+    validator = PlanningValidationAgent(prompts_dir)
 
     print()
     print("━" * 80)

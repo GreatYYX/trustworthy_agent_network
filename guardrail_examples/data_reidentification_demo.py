@@ -1,139 +1,85 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import List
 
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage
-from nemoguardrails import LLMRails, RailsConfig
+
+from guardrail import check_content_safe, load_prompts, run_task
+
+
+def _parse_json_array(text: str) -> list:
+    text = (text or "").strip()
+    if text.startswith("```"):
+        text = text.split("```", 2)[1]
+        if text.startswith("json"):
+            text = text[4:]
+    if text.endswith("```"):
+        text = text.rsplit("```", 1)[0]
+    text = text.strip()
+    try:
+        data = json.loads(text)
+    except Exception:
+        match = re.search(r"\[.*\]", text, re.S)
+        if not match:
+            return []
+        try:
+            data = json.loads(match.group(0))
+        except Exception:
+            return []
+    return data if isinstance(data, list) else []
 
 
 class PublicRegistryAgent:
-    def __init__(self, config_path: Path) -> None:
-        config = RailsConfig.from_path(str(config_path))
-        self.rails = LLMRails(config)
+    def __init__(self, prompts_dir: Path) -> None:
+        self.prompts = load_prompts(prompts_dir)
 
     def generate(self) -> List[dict]:
-        try:
-            prompt = self.rails.runtime.llm_task_manager.render_task_prompt(task="public_registry", context={})
-            out = self.rails.llm.invoke([HumanMessage(content=prompt)])
-        except Exception:
-            return []
-
-        text = getattr(out, "content", None)
-        if text is None and isinstance(out, dict):
-            text = out.get("content") or out.get("output") or str(out)
-        try:
-            text = text.strip()
-            if text.startswith("```"):
-                text = text.split("```", 2)[1]
-                if text.startswith("json"):
-                    text = text[4:]
-            if text.endswith("```"):
-                text = text.rsplit("```", 1)[0]
-            text = text.strip()
-            data = json.loads(text)
-        except Exception:
-            data = []
-        return data
+        return _parse_json_array(run_task(self.prompts, "public_registry"))
 
 
 class MedicalRecordsAgent:
-    def __init__(self, config_path: Path) -> None:
-        config = RailsConfig.from_path(str(config_path))
-        self.rails = LLMRails(config)
+    def __init__(self, prompts_dir: Path) -> None:
+        self.prompts = load_prompts(prompts_dir)
 
     def generate(self, include_name: bool = True) -> List[dict]:
         task = "medical_records_full" if include_name else "medical_records_no_name"
-        try:
-            prompt = self.rails.runtime.llm_task_manager.render_task_prompt(task=task, context={})
-            out = self.rails.llm.invoke([HumanMessage(content=prompt)])
-        except Exception:
-            return []
-
-        text = getattr(out, "content", None)
-        if text is None and isinstance(out, dict):
-            text = out.get("content") or out.get("output") or str(out)
-        try:
-            text = text.strip()
-            if text.startswith("```"):
-                text = text.split("```", 2)[1]
-                if text.startswith("json"):
-                    text = text[4:]
-            if text.endswith("```"):
-                text = text.rsplit("```", 1)[0]
-            text = text.strip()
-            data = json.loads(text)
-        except Exception:
-            data = []
-        return data
+        return _parse_json_array(run_task(self.prompts, task))
 
     def check_for_pii(self, records: List[dict]) -> tuple[bool, str]:
-        try:
-            payload = json.dumps(records)
-            if len(records) == 0:
-                return False, "Blocked by guardrail"
-
-            try:
-                check_result = self.rails.check(messages=[{"role": "user", "content": payload}])
-            except Exception:
-                return False, "Blocked by guardrail"
-
-            try:
-                status_name = check_result.status.name
-            except Exception:
-                status_name = str(check_result.status)
-
-            if status_name == "BLOCKED":
-                return False, "Blocked by guardrail"
-
-            return True, "Allowed"
-
-        except Exception as exc:
+        if not records:
             return False, "Blocked by guardrail"
+        allowed, reply = check_content_safe(self.prompts, json.dumps(records))
+        print(f"  Safety check: {reply}")
+        if not allowed:
+            return False, "Blocked by guardrail"
+        return True, "Allowed"
 
 
 class CrossReferenceAgent:
-    def __init__(self, config_path: Path) -> None:
-        config = RailsConfig.from_path(str(config_path))
-        self.rails = LLMRails(config)
+    def __init__(self, prompts_dir: Path) -> None:
+        self.prompts = load_prompts(prompts_dir)
 
     def cross_reference(self, public_registry: List[dict], medical_records: List[dict]) -> List[dict]:
-        prompt = self.rails.runtime.llm_task_manager.render_task_prompt(
-            task="cross_reference",
-            context={
-                "public_registry": json.dumps(public_registry),
-                "medical_records": json.dumps(medical_records),
-            },
+        text = run_task(
+            self.prompts,
+            "cross_reference",
+            public_registry=json.dumps(public_registry),
+            medical_records=json.dumps(medical_records),
         )
-        out = self.rails.llm.invoke([HumanMessage(content=prompt)])
-        text = getattr(out, "content", None)
-        if text is None and isinstance(out, dict):
-            text = out.get("content") or out.get("output") or str(out)
-        try:
-            text = text.strip()
-            if text.startswith("```"):
-                text = text.split("```", 2)[1]
-                if text.startswith("json"):
-                    text = text[4:]
-            if text.endswith("```"):
-                text = text.rsplit("```", 1)[0]
-            text = text.strip()
-            data = json.loads(text)
-        except Exception:
-            data = []
-        return data
+        return _parse_json_array(text)
 
 
 def run_case_direct_reid() -> None:
     base = Path(__file__).resolve().parent
-    guardrail_config = base / "guardrails" / "data_reidentification"
+    prompts_dir = base / "guardrails" / "data_reidentification"
 
-    public_agent = PublicRegistryAgent(guardrail_config)
+    public_agent = PublicRegistryAgent(prompts_dir)
     public = public_agent.generate()
 
-    med_agent = MedicalRecordsAgent(guardrail_config)
+    med_agent = MedicalRecordsAgent(prompts_dir)
     medical = med_agent.generate(include_name=True)
 
     print("━" * 80)
@@ -154,7 +100,7 @@ def run_case_direct_reid() -> None:
     print()
 
     if allowed:
-        xref = CrossReferenceAgent(guardrail_config)
+        xref = CrossReferenceAgent(prompts_dir)
         linked = xref.cross_reference(public, medical)
         print("[CrossReference] linked records (3)")
         print(json.dumps(linked[:3], indent=2))
@@ -164,12 +110,12 @@ def run_case_direct_reid() -> None:
 
 def run_case_safe_release() -> None:
     base = Path(__file__).resolve().parent
-    guardrail_config = base / "guardrails" / "data_reidentification"
+    prompts_dir = base / "guardrails" / "data_reidentification"
 
-    public_agent = PublicRegistryAgent(guardrail_config)
+    public_agent = PublicRegistryAgent(prompts_dir)
     public = public_agent.generate()
 
-    med_agent = MedicalRecordsAgent(guardrail_config)
+    med_agent = MedicalRecordsAgent(prompts_dir)
     medical = med_agent.generate(include_name=False)
 
     print()
@@ -191,7 +137,7 @@ def run_case_safe_release() -> None:
     print()
 
     if allowed:
-        xref = CrossReferenceAgent(guardrail_config)
+        xref = CrossReferenceAgent(prompts_dir)
         linked = xref.cross_reference(public, medical)
         print("[CrossReference] linked records (3)")
         print(json.dumps(linked[:3], indent=2))

@@ -3,108 +3,269 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="light" />
     <title>Trustworthy Agent Network</title>
-    <link rel="stylesheet" href="styles.css" />
-    <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script defer src="script.js"></script>
+    <meta
+      name="description"
+      content="KDD 2026 Blue Sky Ideas paper on Agent-to-Agent trust with an interactive bolted-on guardrail case study comparing GPT and Claude."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Trustworthy Agent Network" />
+    <meta
+      property="og:description"
+      content="Trust in agent networks must be baked in, not bolted on."
+    />
+    <meta property="og:image" content="https://greatyyx.github.io/trustworthy_agent_network/intro.png" />
+    <meta property="og:url" content="https://greatyyx.github.io/trustworthy_agent_network/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=16" />
   </head>
   <body>
-    <header class="shell">
+    <header class="shell top">
       <div class="brand">
-        <div class="badge" aria-label="Trustworthy">
-          <svg
-            width="30"
-            height="30"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true">
-            <path
-              d="M7 10V7a5 5 0 1110 0v3"
-              stroke="white"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"/>
-            <rect
-              x="5"
-              y="10"
-              width="14"
-              height="10"
-              rx="2"
-              stroke="white"
-              stroke-width="2"/>
-            <circle
-              cx="12"
-              cy="15"
-              r="1.2"
-              fill="white"/>
-            <path
-              d="M12 16.2V17.8"
-              stroke="white"
-              stroke-width="2"
-              stroke-linecap="round"/>
-          </svg>
-        </div>
+        <a class="badge" href="./" aria-label="Home">TA</a>
         <div>
-          <h1 id="page-title">Trustworthy Agent Network</h1>
+          <p class="brand-kicker">KDD 2026 Blue Sky Ideas · arXiv:2605.19035</p>
+          <h1>Trustworthy Agent Network</h1>
         </div>
       </div>
-
-      <div class="actions">
-        <a
-          id="source-link"
-          href="https://github.com/GreatYYX/trustworthy_agent_network"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Open GitHub repository"
-        >
-          <svg class="github-icon" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true">
-            <path d="M8 0C3.58 0 0 3.58 0 8a8.01 8.01 0 0 0 5.47 7.59c.4.07.55-.17.55-.38
-            0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53
-            .63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
-            0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.58 7.58 0 0 1 4 0c1.53-1.03 2.2-.82
-            2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
-            0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-          </svg>
-          GitHub
-        </a>
-
-        <a
-          href="https://arxiv.org/pdf/2605.19035"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Open Paper"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="8" y1="13" x2="16" y2="13"/>
-            <line x1="8" y1="17" x2="13" y2="17"/>
-          </svg>
-          Paper
-        </a>
-      </div>
+      <nav class="actions" aria-label="Primary">
+        <a class="btn" href="#overview">Overview</a>
+        <a class="btn btn-primary" href="#demo">Demo</a>
+        <a class="btn" href="https://arxiv.org/pdf/2605.19035" target="_blank" rel="noopener noreferrer">PDF</a>
+        <a class="btn" href="https://github.com/GreatYYX/trustworthy_agent_network" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </nav>
     </header>
 
     <main class="shell">
-      <article id="content" class="card markdown">
-        <div class="placeholder">
-          <div class="skeleton title"></div>
-          <div class="skeleton line"></div>
-          <div class="skeleton line short"></div>
-          <div class="skeleton line"></div>
+      <section class="paper-card" id="overview">
+        <p class="section-kicker">Overview · KDD 2026 Blue Sky Ideas Track</p>
+        <h2 class="paper-title">
+          Trustworthy Agent Network:<br />
+          Trust in Agent Networks Must Be Baked In, Not Bolted On
+        </h2>
+        <p class="authors">
+          Yixiang Yao<sup>1</sup>,
+          Yuhang Yao<sup>2</sup>,
+          Xinyi Fan<sup>3</sup>,
+          Jiechao Gao<sup>4</sup>,
+          Jie Wang<sup>4</sup>,
+          Minjia Zhang<sup>3</sup>,
+          Srivatsan Ravi<sup>1</sup>,
+          Carlee Joe-Wong<sup>2</sup>
+        </p>
+        <p class="affiliations">
+          <sup>1</sup>University of Southern California ·
+          <sup>2</sup>Carnegie Mellon University ·
+          <sup>3</sup>University of Illinois Urbana-Champaign ·
+          <sup>4</sup>Stanford University
+        </p>
+        <p class="meta-links">
+          <a href="https://arxiv.org/abs/2605.19035" target="_blank" rel="noopener noreferrer">arXiv:2605.19035</a>
+          <span>·</span>
+          <a href="https://arxiv.org/pdf/2605.19035" target="_blank" rel="noopener noreferrer">PDF</a>
+          <span>·</span>
+          <a href="https://eprint.iacr.org/2026/497" target="_blank" rel="noopener noreferrer">IACR ePrint 2026/497</a>
+        </p>
+
+        <div class="overview-copy">
+          <p>
+            Large Language Models have enabled autonomous agents that plan, call tools, and
+            execute multi-step workflows. As these agents move from isolated tools to
+            collaborative <strong>Agent-to-Agent (A2A)</strong> networks, specialization and
+            parallelism improve performance—but trust does not compose automatically.
+          </p>
+          <p>
+            Systemic failures such as adversarial composition, semantic misalignment,
+            data re-identification, and cascading operational failures emerge from
+            interaction dynamics. Bolted-on monitors and filters can detect some unsafe
+            outcomes after the fact, yet leave unsafe trajectories reachable in the
+            underlying transition dynamics.
+          </p>
+          <p>
+            This vision paper argues that trust must be <em>baked into</em> the coordination
+            fabric: unsafe states should be unreachable by construction. We introduce the
+            <strong>Trustworthy Agent Network (TAN)</strong> framework and organize it around
+            four design pillars.
+          </p>
         </div>
-      </article>
+
+        <figure class="paper-figure">
+          <img
+            src="./intro.png"
+            alt="Conceptual overview of trust issues and solutions in agent-to-agent networks"
+          />
+          <figcaption>
+            Figure 1. Trust in A2A systems must be designed into coordination, not attached after deployment.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="section-block demo-block" id="demo">
+        <div class="section-head">
+          <p class="section-kicker">Interactive demo</p>
+          <h2>Bolted-on guardrail case study</h2>
+          <p>
+            Recorded multi-agent conversations under <strong>gpt-5.6-sol</strong> and
+            <strong>claude-opus-5</strong>. This embed does not call a model API.
+            <a href="./demo.html">Open fullscreen →</a>
+          </p>
+        </div>
+        <div class="demo-frame-wrap">
+          <iframe
+            class="demo-frame"
+            title="Interactive guardrail case study"
+            src="./demo.html?embed=1#adversarial/sol/0"
+            loading="lazy"
+          ></iframe>
+        </div>
+      </section>
+
+      <section class="section-block" id="framework">
+        <div class="section-head">
+          <p class="section-kicker">From the paper</p>
+          <h2>Bolted-on versus baked-in</h2>
+          <p>
+            External monitors leave unsafe states reachable if detection fails.
+            Baked-in designs remove those transitions from the system topology.
+          </p>
+        </div>
+
+        <figure class="paper-figure">
+          <img
+            src="./figures/fig2-bolted-vs-baked.png"
+            alt="Comparison of bolted-on monitoring versus baked-in constrained safe state space"
+          />
+          <figcaption>Figure 2. Bolted-On vs. Baked-In (from the paper).</figcaption>
+        </figure>
+
+        <div class="section-head" style="margin-top: 28px">
+          <h2>From vulnerabilities to trust requirements</h2>
+          <p>
+            The paper maps multi-agent failure modes onto four constitutive pillars of a
+            Trustworthy Agent Network.
+          </p>
+        </div>
+
+        <figure class="paper-figure">
+          <img
+            src="./figures/fig3-vulnerabilities-to-pillars.png"
+            alt="Mapping from multi-agent vulnerabilities to trust requirements"
+          />
+          <figcaption>
+            Figure 3. Left: multi-agent risks. Right: properties required for trustworthy operation.
+          </figcaption>
+        </figure>
+
+        <div class="pillar-grid" style="margin-top: 18px">
+          <article class="pillar-card">
+            <span class="pillar-index">I</span>
+            <h3>Compositional robustness</h3>
+            <p>
+              Safety must hold under agent composition when messages and tool calls chain.
+            </p>
+          </article>
+          <article class="pillar-card">
+            <span class="pillar-index">II</span>
+            <h3>Semantic containment</h3>
+            <p>
+              Shared instructions must stay consistent; protocol-correct messages can still be unsafe.
+            </p>
+          </article>
+          <article class="pillar-card">
+            <span class="pillar-index">III</span>
+            <h3>Accountability</h3>
+            <p>
+              Reachable states should encode provenance so actions remain attributable across handoffs.
+            </p>
+          </article>
+          <article class="pillar-card">
+            <span class="pillar-index">IV</span>
+            <h3>Cross-boundary reliability</h3>
+            <p>
+              Execution must remain live and bounded—no unbounded loops or resource blow-ups.
+            </p>
+          </article>
+        </div>
+
+        <div class="section-head" style="margin-top: 28px">
+          <h2>Blueprint for trustworthy agent networks</h2>
+          <p>
+            A constrained transition function over typed intents, with the four pillars
+            jointly enforcing a safe state space.
+          </p>
+        </div>
+
+        <figure class="paper-figure">
+          <img
+            src="./figures/fig4-blueprint.png"
+            alt="Blueprint for trustworthy agent networks with constrained transitions and four pillars"
+          />
+          <figcaption>Figure 4. Blueprint for trustworthy agent networks (from the paper).</figcaption>
+        </figure>
+      </section>
+
+      <section class="section-block" id="references">
+        <div class="section-head">
+          <p class="section-kicker">References</p>
+          <h2>Cite this work</h2>
+        </div>
+
+        <div class="ref-card">
+          <pre class="bibtex"><code>@article{yao2026trustworthy,
+  title={Trustworthy Agent Network: Trust in Agent Networks Must Be Baked In, Not Bolted On},
+  author={Yao, Yixiang and Yao, Yuhang and Fan, Xinyi and Gao, Jiechao and Wang, Jie and Zhang, Minjia and Ravi, Srivatsan and Joe-Wong, Carlee},
+  journal={KDD 2026 Blue Sky Ideas Track},
+  year={2026},
+  note={arXiv:2605.19035}
+}</code></pre>
+        </div>
+
+        <h3 class="ref-subhead">Selected related work discussed in the paper</h3>
+        <ul class="ref-list">
+          <li>
+            Greshake et al., 2023.
+            <em>Not what you’ve signed up for: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection.</em>
+          </li>
+          <li>
+            Zou et al., 2023.
+            <em>Universal and Transferable Adversarial Attacks on Aligned Language Models.</em>
+            <a href="https://llm-attacks.org/" target="_blank" rel="noopener noreferrer">llm-attacks.org</a>
+          </li>
+          <li>
+            Dong et al., 2024.
+            Guardrails / LLM-as-a-Judge style oversight for agent workflows.
+          </li>
+          <li>
+            Anthropic, 2024.
+            <em>Model Context Protocol (MCP)</em> — protocol-centric trust at the syntax/identity layer.
+          </li>
+          <li>
+            Cemri et al., 2025; Hendrycks et al., 2023.
+            On why local alignment does not automatically yield network-level trust.
+          </li>
+        </ul>
+
+        <p class="ref-note">
+          Full bibliography:
+          <a href="https://arxiv.org/html/2605.19035v1" target="_blank" rel="noopener noreferrer">arXiv HTML</a>
+          ·
+          <a href="https://arxiv.org/pdf/2605.19035" target="_blank" rel="noopener noreferrer">PDF</a>
+        </p>
+      </section>
     </main>
+
+    <footer class="shell site-footer">
+      <p>
+        Yao et al., 2026. KDD Blue Sky Ideas Track.
+        <em>Trustworthy Agent Network: Trust in Agent Networks Must Be Baked In, Not Bolted On.</em>
+      </p>
+    </footer>
   </body>
 </html>

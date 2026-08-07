@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import List
-import re
 
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage
-from nemoguardrails import LLMRails, RailsConfig
+
+from guardrail import check_content_safe, load_prompts, run_task
 
 
 class LoopGuardrail:
-    def __init__(self, config_path: Path) -> None:
-        config = RailsConfig.from_path(str(config_path))
-        self.rails = LLMRails(config)
+    def __init__(self, prompts_dir: Path) -> None:
+        self.prompts = load_prompts(prompts_dir)
 
     def evaluate(self, history: List[dict]) -> tuple[bool, str]:
         if len(history) < 2:
@@ -21,53 +20,27 @@ class LoopGuardrail:
 
         previous_script = history[-2]["script"]
         latest_script = history[-1]["script"]
-
-        try:
-            payload = json.dumps({"previous_script": previous_script, "latest_script": latest_script})
-            check_result = self.rails.check(messages=[{"role": "user", "content": payload}])
-        except Exception:
+        payload = json.dumps({"previous_script": previous_script, "latest_script": latest_script})
+        allowed, reply = check_content_safe(self.prompts, payload)
+        print(f"  Safety check: {reply}")
+        if not allowed:
             return False, "Blocked by guardrail"
-
-        try:
-            status_name = check_result.status.name
-        except Exception:
-            status_name = str(getattr(check_result, "status", ""))
-
-        if status_name == "BLOCKED":
-            return False, "Blocked by guardrail"
-
         return True, "Allowed"
 
 
 class CoderAgent:
-    def __init__(self, config_path: Path) -> None:
-        config = RailsConfig.from_path(str(config_path))
-        self.rails = LLMRails(config)
+    def __init__(self, prompts_dir: Path) -> None:
+        self.prompts = load_prompts(prompts_dir)
 
     def write_same_bug(self, round_number: int) -> str:
-        prompt = self.rails.runtime.llm_task_manager.render_task_prompt(
-            task="coder_same_bug",
-            context={"round_number": str(round_number)},
-        )
-        out = self.rails.llm.invoke([HumanMessage(content=prompt)])
-        return self._extract_text(out)
+        return self._clean(run_task(self.prompts, "coder_same_bug", round_number=str(round_number)))
 
     def write_renamed_bug(self, round_number: int, previous_var: str | None = None) -> str:
-        ctx = {"round_number": str(round_number)}
-        if previous_var:
-            ctx["previous_var"] = previous_var
-        prompt = self.rails.runtime.llm_task_manager.render_task_prompt(
-            task="coder_rename_variable",
-            context=ctx,
-        )
-        out = self.rails.llm.invoke([HumanMessage(content=prompt)])
-        return self._extract_text(out)
+        ctx = {"round_number": str(round_number), "previous_var": previous_var or ""}
+        return self._clean(run_task(self.prompts, "coder_rename_variable", **ctx))
 
-    def _extract_text(self, out: object) -> str:
-        text = getattr(out, "content", None)
-        if text is None and isinstance(out, dict):
-            text = out.get("content") or out.get("output") or str(out)
-        text = str(text).strip()
+    def _clean(self, text: str) -> str:
+        text = (text or "").strip()
         if text.startswith("```"):
             text = text.split("```", 2)[1]
             if text.startswith("python"):
@@ -79,23 +52,12 @@ class CoderAgent:
 
 
 class TesterAgent:
-    def __init__(self, config_path: Path) -> None:
-        config = RailsConfig.from_path(str(config_path))
-        self.rails = LLMRails(config)
+    def __init__(self, prompts_dir: Path) -> None:
+        self.prompts = load_prompts(prompts_dir)
 
     def run_script(self, script: str) -> str:
-        prompt = self.rails.runtime.llm_task_manager.render_task_prompt(
-            task="tester_report",
-            context={"script": script},
-        )
-        out = self.rails.llm.invoke([HumanMessage(content=prompt)])
-        return self._extract_text(out)
-
-    def _extract_text(self, out: object) -> str:
-        text = getattr(out, "content", None)
-        if text is None and isinstance(out, dict):
-            text = out.get("content") or out.get("output") or str(out)
-        text = str(text).strip()
+        text = run_task(self.prompts, "tester_report", script=script)
+        text = (text or "").strip()
         if text.startswith("```"):
             text = text.split("```", 2)[1]
             if text.startswith("text"):
@@ -107,11 +69,11 @@ class TesterAgent:
 
 def run_case_repeating_failure() -> None:
     base = Path(__file__).resolve().parent
-    guardrail_config = base / "guardrails" / "operational_failure"
+    prompts_dir = base / "guardrails" / "operational_failure"
 
-    guardrail = LoopGuardrail(guardrail_config)
-    coder = CoderAgent(guardrail_config)
-    tester = TesterAgent(guardrail_config)
+    guardrail = LoopGuardrail(prompts_dir)
+    coder = CoderAgent(prompts_dir)
+    tester = TesterAgent(prompts_dir)
 
     print("━" * 80)
     print("OPERATIONAL FAILURE - CASE 1: NO CODE CHANGE BLOCKED")
@@ -146,11 +108,11 @@ def run_case_repeating_failure() -> None:
 
 def run_case_variable_rename() -> None:
     base = Path(__file__).resolve().parent
-    guardrail_config = base / "guardrails" / "operational_failure"
+    prompts_dir = base / "guardrails" / "operational_failure"
 
-    guardrail = LoopGuardrail(guardrail_config)
-    coder = CoderAgent(guardrail_config)
-    tester = TesterAgent(guardrail_config)
+    guardrail = LoopGuardrail(prompts_dir)
+    coder = CoderAgent(prompts_dir)
+    tester = TesterAgent(prompts_dir)
 
     print()
     print("━" * 80)

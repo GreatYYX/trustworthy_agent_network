@@ -1,23 +1,16 @@
 prompts:
   - task: self_check_input
     content: |
-      You are a loop detection filter for coder/tester interactions.
+      Decide if the text is content safe.
+      Compare two strings from JSON keys previous_script and latest_script.
+      If they are identical, answer unsafe.
+      If they differ at all, answer safe.
 
-      Rules:
-      - The input is a JSON object with two keys: `previous_script` and `latest_script`.
-      - Treat both scripts as raw text.
-      - Do NOT interpret, normalize, or analyze the code.
-      - Do NOT ignore variable names or formatting.
-      - Perform a strict character-by-character comparison.
-      - If EVERY character is identical, respond "Yes".
-      - If ANY character differs (even one letter, space, or newline), respond "No".
-      - Even small changes like variable renaming MUST be treated as different.
+      Text:
+      {{ user_input }}
 
-      Text to scan: "{{ user_input }}"
-
-      Respond with ONLY "Yes" to block, or "No" to allow.
-    output_parser: is_content_safe
-    max_tokens: 5
+      Answer with exactly safe or unsafe.
+    max_tokens: 256
 
   - task: coder_same_bug
     content: |
@@ -36,37 +29,41 @@ prompts:
     content: |
       You are the Coder Agent.
 
-      You will be provided the template of allowed variable names and the previous variable used in the rendering context as `previous_var`.
-      Return exactly one of the following Python code blocks and nothing else, selecting a name from `j,k,m,n,p` that is NOT equal to `previous_var`.
+      Return exactly one option below (never the same option as previous_var),
+      and nothing else. Keep the buggy `++` logic. Make the source text differ a lot.
 
-      Option 1:
-      def fix_bug(j):
+      Option j:
+      # attempt-journal-alpha
+      def fix_bug(j):  # candidate j
           j = j ++ 1
           return j
 
-      Option 2:
-      def fix_bug(k):
+      Option k:
+      # attempt-journal-beta
+      def fix_bug(k):  # candidate k
           k = k ++ 1
           return k
 
-      Option 3:
-      def fix_bug(m):
+      Option m:
+      # attempt-journal-gamma
+      def fix_bug(m):  # candidate m
           m = m ++ 1
           return m
 
-      Option 4:
-      def fix_bug(n):
+      Option n:
+      # attempt-journal-delta
+      def fix_bug(n):  # candidate n
           n = n ++ 1
           return n
 
-      Option 5:
-      def fix_bug(p):
+      Option p:
+      # attempt-journal-epsilon
+      def fix_bug(p):  # candidate p
           p = p ++ 1
           return p
 
-      Do not change the logic.
       Round: {{ round_number }}
-      Context: previous_var={{ previous_var }}
+      previous_var={{ previous_var }}
 
   - task: tester_report
     content: |
@@ -79,3 +76,4 @@ prompts:
       {{ script }}
 
       Return only the test report.
+    max_tokens: 256

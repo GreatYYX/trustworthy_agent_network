@@ -2,7 +2,6 @@ const README_URL = "README.md";
 
 const contentEl = document.getElementById("content");
 const titleEl = document.getElementById("page-title");
-const sourceLink = document.getElementById("source-link");
 
 function escapeHtml(text) {
   return text
@@ -19,7 +18,7 @@ function renderMarkdown(markdown) {
 
   if (headingMatch) {
     const mainTitle = headingMatch[1].trim();
-    titleEl.textContent = mainTitle;
+    if (titleEl) titleEl.textContent = mainTitle;
     document.title = mainTitle;
     body = markdown.replace(/^#\s+.+\n?/, "");
   }
@@ -46,7 +45,6 @@ async function loadReadme() {
     }
 
     const markdown = await response.text();
-
     if (!markdown.trim()) {
       throw new Error("README.md is empty");
     }
@@ -56,23 +54,12 @@ async function loadReadme() {
     const message = error instanceof Error ? error.message : String(error);
     contentEl.innerHTML = `
       <div class="placeholder">
-        <h2>README not available</h2>
-        <p>Could not load <code>README.md</code> from the site root.</p>
+        <h2>Paper abstract unavailable</h2>
+        <p>Could not load <code>README.md</code>.</p>
         <p>Error: ${escapeHtml(message)}</p>
       </div>
     `;
-    titleEl.textContent = "README";
-    document.title = "README";
   }
 }
-
-sourceLink.addEventListener("click", (event) => {
-  if (
-    sourceLink.getAttribute("href") === "https://github.com/OWNER/REPO"
-  ) {
-    event.preventDefault();
-    alert("Replace https://github.com/OWNER/REPO with your real repository URL.");
-  }
-});
 
 loadReadme();
